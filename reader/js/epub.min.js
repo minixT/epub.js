@@ -3045,6 +3045,7 @@ EPUBJS.Chapter.prototype.render = function(_store){
 	.then(function(doc) {
 		var serializer = new XMLSerializer();
 		var contents = serializer.serializeToString(doc);
+		contents = contents.replace(/<(?!br)([^ >]+)( )?([^<]*) ?\/>/g, '<$1$2$3> </$1>');
 		return contents;
 	}.bind(this));
 };
@@ -5371,20 +5372,6 @@ EPUBJS.Parser.prototype.findTocPath = function(manifestNode, spineNode){
 	return node ? node.getAttribute('href') : false;
 };
 
-//-- Find Cover: <item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml" />
-//-- Fallback for Epub 2.0
-EPUBJS.Parser.prototype.findCoverPath = function(packageXml){
-	var epubVersion = packageXml.querySelector('package').getAttribute('version');
-	if (epubVersion === '2.0') {
-		var coverId = packageXml.querySelector('meta[name="cover"]').getAttribute('content');
-		return packageXml.querySelector("item[id='" + coverId + "']").getAttribute('href');
-	}
-	else {
-		var node = packageXml.querySelector("item[properties='cover-image']");
-		return node ? node.getAttribute('href') : false;
-	}
-};
-
 //-- Expanded to match Readium web components
 EPUBJS.Parser.prototype.metadata = function(xml){
 	var metadata = {},
@@ -5408,6 +5395,28 @@ EPUBJS.Parser.prototype.metadata = function(xml){
 	metadata.spread = p.querySelectorText(xml, "meta[property='rendition:spread']");
 
 	return metadata;
+};
+
+//-- Find Cover: <item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml" />
+//-- Fallback for Epub 2.0
+EPUBJS.Parser.prototype.findCoverPath = function(packageXml){
+
+	var epubVersion = packageXml.querySelector('package').getAttribute('version');
+	if (epubVersion === '2.0') {
+		var metaCover = packageXml.querySelector('meta[name="cover"]');
+		if (metaCover) {
+			var coverId = metaCover.getAttribute('content');
+			var cover = packageXml.querySelector("item[id='" + coverId + "']");
+			return cover ? cover.getAttribute('href') : false;
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		var node = packageXml.querySelector("item[properties='cover-image']");
+		return node ? node.getAttribute('href') : false;
+	}
 };
 
 EPUBJS.Parser.prototype.getElementText = function(xml, tag){
@@ -6590,7 +6599,9 @@ EPUBJS.Renderer.prototype.mapPage = function(){
 	var elLimit = 0;
 	var prevRange;
 	var cfi;
+	var lastChildren = null;
 	var check = function(node) {
+//                console.log( "check", node );
 		var elPos;
 		var elRange;
 		var children = Array.prototype.slice.call(node.childNodes);
@@ -6604,6 +6615,7 @@ EPUBJS.Renderer.prototype.mapPage = function(){
 				return;
 			}
 
+			lastChildren = children; 
 			//-- Element starts new Col
 			if(elPos.left > elLimit) {
 				children.forEach(function(node){
@@ -6612,6 +6624,7 @@ EPUBJS.Renderer.prototype.mapPage = function(){
 						checkText(node);
 					}
 				});
+				lastChildren = null;
 			}
 
 			//-- Element Spans new Col
@@ -6622,11 +6635,13 @@ EPUBJS.Renderer.prototype.mapPage = function(){
 						checkText(node);
 					}
 				});
+				lastChildren = null;
 			}
 		}
 
 	};
 	var checkText = function(node){
+//                console.log( "checkText", node );
 		var ranges = renderer.splitTextNodeIntoWordsRanges(node);
 		ranges.forEach(function(range){
 			var pos = range.getBoundingClientRect();
@@ -6675,6 +6690,17 @@ EPUBJS.Renderer.prototype.mapPage = function(){
 	}
 
 	this.sprint(root, check);
+
+	// Check the remaining children that fit on this page
+	// to ensure the end is correctly calculated
+	if (lastChildren !== null) {
+		lastChildren.forEach(function(node){
+			if(node.nodeType == Node.TEXT_NODE &&
+			   node.textContent.trim().length) {
+				checkText(node);
+			}
+		});
+	}
 
 	// Reset back to previous RTL settings
 	if(dir == "rtl") {
@@ -7276,14 +7302,18 @@ EPUBJS.replace.resources = function(callback, renderer){
 EPUBJS.replace.svg = function(callback, renderer) {
 
 	renderer.replaceWithStored("svg image", "xlink:href", function(_store, full, done){
-		_store.getUrl(full).then(done);
+		_store.getUrl(full).then(done, function () {
+			done(null);
+		});
 	}, callback);
 
 };
 
 EPUBJS.replace.srcs = function(_store, full, done){
 
-	_store.getUrl(full).then(done);
+	_store.getUrl(full).then(done, function () {
+		done(null);
+	});
 
 };
 
