@@ -70,14 +70,18 @@ EPUBJS.replace.resources = function(callback, renderer){
 EPUBJS.replace.svg = function(callback, renderer) {
 
 	renderer.replaceWithStored("svg image", "xlink:href", function(_store, full, done){
-		_store.getUrl(full).then(done).catch(done);
+		_store.getUrl(full).then(done, function () {
+			done(null);
+		});
 	}, callback);
 
 };
 
 EPUBJS.replace.srcs = function(_store, full, done){
 
-	_store.getUrl(full).then(done).catch(done);
+	_store.getUrl(full).then(done, function () {
+		done(null);
+	});
 
 };
 
