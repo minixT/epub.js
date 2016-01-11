@@ -3158,7 +3158,6 @@ EPUBJS.Chapter.prototype.cfiFromRange = function(_range) {
 
 		// Fuzzy Match
 		if(!startContainer) {
-			console.log("not found, try fuzzy match");
 			cleanStartTextContent = EPUBJS.core.cleanStringForXpath(_range.startContainer.textContent);
 			startXpath = "//text()[contains(.," + cleanStartTextContent + ")]";
 
