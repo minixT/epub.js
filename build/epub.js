@@ -3484,7 +3484,7 @@ EPUBJS.core.request = function(url, type, withCredentials) {
 	}
 
 	if(type == 'html') {
-		xhr.responseType = "document";
+		xhr.responseType = "text";
  	}
 
 	if(type == "binary") {
