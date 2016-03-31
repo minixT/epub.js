@@ -3415,11 +3415,7 @@ EPUBJS.core.request = function(url, type, withCredentials) {
         }
 			}else
 			if(type == 'html'){
-				if(!this.responseXML){
-          r = new DOMParser().parseFromString(this.response, "text/html");
-        } else {
-          r = this.responseXML;
-        }
+          		r = new DOMParser().parseFromString(this.response, "text/html");
 			} else
 			if(type == 'json'){
 				r = JSON.parse(this.response);
