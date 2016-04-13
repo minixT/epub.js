@@ -3150,7 +3150,7 @@ EPUBJS.Chapter.prototype.cfiFromRange = function(_range) {
 					range.setEnd(endContainer, _range.endOffset);
 				}
 			} catch (e) {
-				console.log("missed");
+				//console.log("missed");
 				startContainer = false;
 			}
 
