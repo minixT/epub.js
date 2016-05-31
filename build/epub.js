@@ -1860,7 +1860,7 @@ EPUBJS.Book.prototype.loadPackage = function(_containerPath){
 
 	packageXml.catch(function(error) {
 		// handle errors in either of the two requests
-		console.error("Could not load book at: "+ containerPath);
+		//console.error("Could not load book at: "+ containerPath);
 		book.trigger("book:loadFailed", containerPath);
 	});
 	return packageXml;
@@ -2488,7 +2488,7 @@ EPUBJS.Book.prototype.displayChapter = function(chap, end, deferred){
 
 	}, function(error) {
 		// handle errors in either of the two requests
-		console.error("Could not load Chapter: "+ chapter.absolute, error);
+		//console.error("Could not load Chapter: "+ chapter.absolute, error);
 		book.trigger("book:chapterLoadFailed", chapter.absolute);
 		book._rendering = false;
 		defer.reject(error);
