@@ -1771,7 +1771,9 @@ EPUBJS.Book = function(options){
 
 	// BookUrl is optional, but if present start loading process
 	if(typeof this.settings.bookPath === 'string' || this.settings.bookPath instanceof ArrayBuffer) {
-		this.open(this.settings.bookPath, this.settings.reload);
+		this.open(this.settings.bookPath, this.settings.reload).then(undefined, function() {
+			book.trigger("book:loadFailed");
+		});
 	}
 
 	window.addEventListener("beforeunload", this.unload.bind(this), false);
@@ -1827,6 +1829,8 @@ EPUBJS.Book.prototype.open = function(bookPath, forceReload){
 			book.unpack(packageXml);
 			opened.resolve();
 			book.defer_opened.resolve();
+		}, function(error) {
+			opened.reject(error);
 		});
 	}
 
