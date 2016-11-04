@@ -1223,7 +1223,7 @@ EPUBJS.Book.prototype.unload = function(){
 		this.saveContents();
 	}
 
-	this.unlistenToRenderer(this.renderer);
+	//this.unlistenToRenderer(this.renderer);
 
 	this.trigger("book:unload");
 };
